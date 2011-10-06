@@ -15,9 +15,10 @@ with 'Dist::Zilla::Role::FileInjector';
 
 sub _mod_to_filename {
 	my $module = shift;
-	return File::Spec->catfile('inc', split /::|'/, $module) . '.pm';
+	return File::Spec->catfile('inc', split / :: | ' /x, $module) . '.pm';
 }
 
+## no critic (Variables::ProhibitPackageVars)
 sub _core_has {
 	my ($module, $wanted_version, $background_perl) = @_;
 	my $offered_version = $Module::CoreList::version{$background_perl}{$module};
@@ -28,7 +29,7 @@ sub _get_reqs {
 	my ($reqs, $scanner, $module, $background) = @_;
 	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
-	my @real_reqs = grep { $_ ne 'perl' and (not defined $reqs->{$_} or $reqs->{$_} < $new_reqs{$_} ) and !_core_has($_, $new_reqs{$_}, $background) } keys %new_reqs;
+	my @real_reqs = grep { $_ ne 'perl' and (not defined $reqs->{$_} or $reqs->{$_} < $new_reqs{$_} ) and not _core_has($_, $new_reqs{$_}, $background) } keys %new_reqs;
 	for my $req (@real_reqs) {
 		$reqs->{$req} = $new_reqs{$req};
 		_get_reqs($reqs, $scanner, $req, $background);
@@ -46,6 +47,7 @@ sub include_modules {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => scalar read_file($location_for{$filename})});
 		$self->add_file($file);
 	}
+	return;
 }
 
 1;
