@@ -38,11 +38,11 @@ sub _get_reqs {
 }
 
 sub include_modules {
-	my ($self, $modules, $background) = @_;
+	my ($self, $modules, $background, $options) = @_;
 	my %reqs;
 	my $scanner = Perl::PrereqScanner->new;
-	_get_reqs(\%reqs, $scanner, $_, $background) for @{$modules};
-	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@{$modules}, keys %reqs);
+	_get_reqs(\%reqs, $scanner, $_, $background->numify) for @{$modules};
+	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(($options->{only_deps} ? () : @{$modules}), keys %reqs);
 	for my $filename (keys %location_for) {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => scalar read_file($location_for{$filename})});
 		$self->add_file($file);
@@ -60,6 +60,6 @@ __END__
 
 This role allows your plugin to include one or more modules into the distribution for build time purposes. The modules will not be installed.
 
-=method include_modules($modules, $background_perl)
+=method include_modules($modules, $background_perl, $options)
 
-Include all modules in C<@$modules> and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl>.
+Include all modules in C<@$modules> and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, only_deps, to specify the dependencies of the modules should be included without the module itself.
