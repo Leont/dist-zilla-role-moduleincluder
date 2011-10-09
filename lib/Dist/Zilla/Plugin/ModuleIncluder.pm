@@ -20,6 +20,15 @@ has add_module => (
 	required => 1,
 );
 
+has blacklist => (
+	isa => 'ArrayRef[Str]',
+	traits => ['Array'],
+	handles => {
+		blacklisted_modules => 'elements',
+	},
+	default => sub { [] },
+);
+
 has background_perl => (
 	is => 'ro',
 	isa => 'ModuleIncluder::Version',
@@ -35,13 +44,17 @@ has only_deps => (
 
 sub gather_files {
 	my ($self, $arg) = @_;
-	$self->include_modules([$self->modules_to_add], $self->background_perl, { only_deps => $self->only_deps });
+	$self->include_modules([$self->modules_to_add], $self->background_perl, { only_deps => $self->only_deps, blacklist => [ $self->blacklisted_modules ] });
 	return;
 }
 
 sub mvp_multivalue_args {
-	return 'add_module';
+	return qw/add_module blacklist/;
 }
+
+__PACKAGE__->meta->make_immutable;
+
+no Moose;
 
 1;
 

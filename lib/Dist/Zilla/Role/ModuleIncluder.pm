@@ -18,30 +18,38 @@ sub _mod_to_filename {
 	return File::Spec->catfile('inc', split / :: | ' /x, $module) . '.pm';
 }
 
+my $version = \%Module::CoreList::version;
+
 ## no critic (Variables::ProhibitPackageVars)
 sub _core_has {
 	my ($module, $wanted_version, $background_perl) = @_;
-	my $offered_version = $Module::CoreList::version{$background_perl}{$module};
-	return defined $offered_version and $offered_version >= $wanted_version;
+	return exists $version->{$background_perl}{$module} and $version->{$background_perl}{$module} || 0 >= $wanted_version;
 }
 
 sub _get_reqs {
-	my ($reqs, $scanner, $module, $background) = @_;
+	my ($reqs, $scanner, $module, $background, $blacklist) = @_;
 	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
-	my @real_reqs = grep { $_ ne 'perl' and (not defined $reqs->{$_} or $reqs->{$_} < $new_reqs{$_} ) and not _core_has($_, $new_reqs{$_}, $background) } keys %new_reqs;
+	my @real_reqs = grep { not $blacklist->{$_} and (not defined $reqs->{$_} or $reqs->{$_} < $new_reqs{$_} ) and not _core_has($_, $new_reqs{$_}, $background) } keys %new_reqs;
+	confess $module if grep { $_ eq 'Config' } @real_reqs;
 	for my $req (@real_reqs) {
 		$reqs->{$req} = $new_reqs{$req};
-		_get_reqs($reqs, $scanner, $req, $background);
+		_get_reqs($reqs, $scanner, $req, $background, $blacklist);
 	}
 	return;
+}
+
+sub _version_normalize {
+	my $version = shift;
+	return $version >= 5.010 ? sprintf "%1.6f", $version->numify : $version->numify;
 }
 
 sub include_modules {
 	my ($self, $modules, $background, $options) = @_;
 	my %reqs;
 	my $scanner = Perl::PrereqScanner->new;
-	_get_reqs(\%reqs, $scanner, $_, $background->numify) for @{$modules};
+	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
+	_get_reqs(\%reqs, $scanner, $_, _version_normalize($background), \%blacklist) for @{$modules};
 	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(($options->{only_deps} ? () : @{$modules}), keys %reqs);
 	for my $filename (keys %location_for) {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => scalar read_file($location_for{$filename})});
