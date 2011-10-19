@@ -4,6 +4,7 @@ use Moose::Role;
 
 use Dist::Zilla::File::InMemory;
 use File::Slurp 'read_file';
+use Scalar::Util qw/reftype/;
 use List::MoreUtils 'uniq';
 use Module::CoreList;
 use Module::Metadata;
@@ -46,11 +47,13 @@ sub _version_normalize {
 
 sub include_modules {
 	my ($self, $modules, $background, $options) = @_;
+	my %modules = reftype($modules) eq 'HASH' ? %{$modules} : map { $_ => 0 } @{$modules};
 	my %reqs;
 	my $scanner = Perl::PrereqScanner->new;
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
-	_get_reqs(\%reqs, $scanner, $_, _version_normalize($background), \%blacklist) for @{$modules};
-	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(($options->{only_deps} ? () : @{$modules}), keys %reqs);
+	_get_reqs(\%reqs, $scanner, $_, _version_normalize($background), \%blacklist) for keys %modules;
+	my @modules = grep { !$modules->{$_} } keys %modules;
+	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
 	for my $filename (keys %location_for) {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => scalar read_file($location_for{$filename})});
 		$self->add_file($file);
@@ -70,4 +73,7 @@ This role allows your plugin to include one or more modules into the distributio
 
 =method include_modules($modules, $background_perl, $options)
 
-Include all modules in C<@$modules> and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, only_deps, to specify the dependencies of the modules should be included without the module itself.
+Include all modules in C<@$modules>, and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, blacklist, to specify dependencies that shouldn't be included.
+
+=cut
+

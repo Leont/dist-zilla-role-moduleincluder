@@ -44,7 +44,7 @@ has only_deps => (
 
 sub gather_files {
 	my ($self, $arg) = @_;
-	$self->include_modules([$self->modules_to_add], $self->background_perl, { only_deps => $self->only_deps, blacklist => [ $self->blacklisted_modules ] });
+	$self->include_modules({ map { ($_ => $self->only_deps ) } $self->modules_to_add }, $self->background_perl, { blacklist => [ $self->blacklisted_modules ] });
 	return;
 }
 
