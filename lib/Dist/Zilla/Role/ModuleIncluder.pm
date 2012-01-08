@@ -52,7 +52,7 @@ sub include_modules {
 	my $scanner = Perl::PrereqScanner->new;
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
 	_get_reqs(\%reqs, $scanner, $_, _version_normalize($background), \%blacklist) for keys %modules;
-	my @modules = grep { !$modules->{$_} } keys %modules;
+	my @modules = grep { !$modules{$_} } keys %modules;
 	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
 	for my $filename (keys %location_for) {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => scalar read_file($location_for{$filename})});
