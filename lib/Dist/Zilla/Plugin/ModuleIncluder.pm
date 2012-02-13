@@ -3,13 +3,9 @@ use version;
 use Moose;
 
 use version;
-use Moose::Util::TypeConstraints;
+use MooseX::Types::Perl 'VersionObject';
 
 with qw/Dist::Zilla::Role::ModuleIncluder Dist::Zilla::Role::FileGatherer/;
-
-subtype 'ModuleIncluder::Version', as class_type('version');
-
-coerce 'ModuleIncluder::Version', from 'Str', via { version->new($_) };
 
 has add_module => (
 	isa => 'ArrayRef[Str]',
@@ -31,7 +27,7 @@ has blacklist => (
 
 has background_perl => (
 	is => 'ro',
-	isa => 'ModuleIncluder::Version',
+	isa => VersionObject,
 	default => sub { version->new('5.008001') },
 	coerce => 1,
 );
