@@ -54,9 +54,9 @@ no Moose;
 
 1;
 
-__END__
-
 #ABSTRACT: explicitly include modules into a distribution
+
+__END__
 
 =for Pod::Coverage
 gather_files

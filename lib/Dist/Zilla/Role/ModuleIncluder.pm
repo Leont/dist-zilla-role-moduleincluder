@@ -24,7 +24,7 @@ my $version = \%Module::CoreList::version;
 ## no critic (Variables::ProhibitPackageVars)
 sub _core_has {
 	my ($module, $wanted_version, $background_perl) = @_;
-	return exists $version->{$background_perl}{$module} and $version->{$background_perl}{$module} || 0 >= $wanted_version;
+	return exists $version->{$background_perl}{$module} and $version->{$background_perl}{$module} >= $wanted_version || 0 >= $wanted_version;
 }
 
 sub _get_reqs {
@@ -32,7 +32,6 @@ sub _get_reqs {
 	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
 	my @real_reqs = grep { not $blacklist->{$_} and (not defined $reqs->{$_} or $reqs->{$_} < $new_reqs{$_} ) and not _core_has($_, $new_reqs{$_}, $background) } keys %new_reqs;
-	confess $module if grep { $_ eq 'Config' } @real_reqs;
 	for my $req (@real_reqs) {
 		$reqs->{$req} = $new_reqs{$req};
 		_get_reqs($reqs, $scanner, $req, $background, $blacklist);
@@ -63,9 +62,9 @@ sub include_modules {
 
 1;
 
-__END__
-
 #ABSTRACT: Include a module and its dependencies in inc/
+
+__END__
 
 =head1 DESCRIPTION
 
