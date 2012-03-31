@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+          Added corpus/ to no_index
 
 0.001     2012-03-31 17:07:36 Europe/Amsterdam
           Initial release
