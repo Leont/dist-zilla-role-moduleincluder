@@ -7,11 +7,11 @@ use MooseX::Types::Perl 'VersionObject';
 
 with qw/Dist::Zilla::Role::ModuleIncluder Dist::Zilla::Role::FileGatherer/;
 
-has add_module => (
+has module => (
 	isa => 'ArrayRef[Str]',
 	traits => ['Array'],
 	handles => {
-		modules_to_add => 'elements',
+		modules => 'elements',
 	},
 	required => 1,
 );
@@ -40,12 +40,12 @@ has only_deps => (
 
 sub gather_files {
 	my ($self, $arg) = @_;
-	$self->include_modules({ map { ($_ => $self->only_deps ) } $self->modules_to_add }, $self->background_perl, { blacklist => [ $self->blacklisted_modules ] });
+	$self->include_modules({ map { ($_ => $self->only_deps ) } $self->modules }, $self->background_perl, { blacklist => [ $self->blacklisted_modules ] });
 	return;
 }
 
 sub mvp_multivalue_args {
-	return qw/add_module blacklist/;
+	return qw/module blacklist/;
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -68,8 +68,8 @@ mvp_multivalue_args
 In dist.ini:
 
  [ModuleIncluder]
- add_module = Foo
- add_module = Bar
+ module = Foo
+ module = Bar
  background_perl = 5.008001 #default value
  only_deps = 0 #default
 
@@ -79,7 +79,7 @@ This module allows you to explicitly include a module and its dependencies in C<
 
 =over 4
 
-=item * add_module
+=item * module
 
 Add a module to be included. This option can be given more than once.
 
@@ -89,6 +89,6 @@ Set the background perl version. If the (appropriate version of the) module was 
 
 =item * only_deps
 
-Do not include the specified modules, only their dependencies. Note that it still includes the module if its dependencies or any of the 
+Do not include the specified modules, only their dependencies. Note that it still includes the module if something else depends on it.
 
 =back
