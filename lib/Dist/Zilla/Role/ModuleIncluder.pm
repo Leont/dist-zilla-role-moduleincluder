@@ -24,7 +24,7 @@ my $version = \%Module::CoreList::version;
 ## no critic (Variables::ProhibitPackageVars)
 sub _core_has {
 	my ($module, $wanted_version, $background_perl) = @_;
-	return exists $version->{$background_perl}{$module} and $version->{$background_perl}{$module} >= $wanted_version || 0 >= $wanted_version;
+	return exists $version->{$background_perl}{$module} && ($version->{$background_perl}{$module} >= $wanted_version || $wanted_version <= 0);
 }
 
 sub _get_reqs {
