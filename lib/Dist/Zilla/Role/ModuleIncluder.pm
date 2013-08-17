@@ -24,18 +24,24 @@ my $version = \%Module::CoreList::version;
 ## no critic (Variables::ProhibitPackageVars)
 
 sub _should_skip {
-	my ($module, $version, $reqs, $blacklist, $background) = @_;
-	return $blacklist->{$module} || (defined $reqs->{$module} && $reqs->{$module} >= $version) || (exists $background->{$module} && ($version <= 0 || $background->{$module} >= $version));
+	my ($module, $version, $blacklist, $background) = @_;
+	return $blacklist->{$module} || exists $background->{$module} && ($version <= 0 || $background->{$module} >= $version);
 }
 
 sub _get_reqs {
 	my ($reqs, $scanner, $module, $background, $blacklist) = @_;
 	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
-	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $reqs, $blacklist, $background) } keys %new_reqs;
+	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $blacklist, $background) } keys %new_reqs;
 	for my $req (@real_reqs) {
-		$reqs->{$req} = $new_reqs{$req};
-		_get_reqs($reqs, $scanner, $req, $background, $blacklist);
+		if (defined $reqs->{$module}) {
+			next if $reqs->{$module} >= $new_reqs{$req};
+			$reqs->{$req} = $new_reqs{$req};
+		}
+		else {
+			$reqs->{$req} = $new_reqs{$req};
+			_get_reqs($reqs, $scanner, $req, $background, $blacklist);
+		}
 	}
 	return;
 }
