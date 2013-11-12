@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+          Switch from File::Slurp to File::Slurp::Tiny
 
 0.003     2013-08-17 13:51:40 Europe/Amsterdam
           Fix precedence issue in return … and …
