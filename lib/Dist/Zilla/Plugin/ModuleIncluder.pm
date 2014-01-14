@@ -3,12 +3,14 @@ use version;
 use Moose;
 
 use version;
+use MooseX::Types::Moose qw/ArrayRef Bool/;
 use MooseX::Types::Perl 'VersionObject';
+use MooseX::Types::Stringlike 'Stringlike';
 
 with qw/Dist::Zilla::Role::ModuleIncluder Dist::Zilla::Role::FileGatherer/;
 
 has module => (
-	isa => 'ArrayRef[Str]',
+	isa => ArrayRef[Stringlike],
 	traits => ['Array'],
 	handles => {
 		modules => 'elements',
@@ -17,7 +19,7 @@ has module => (
 );
 
 has blacklist => (
-	isa => 'ArrayRef[Str]',
+	isa => ArrayRef[Stringlike],
 	traits => ['Array'],
 	handles => {
 		blacklisted_modules => 'elements',
@@ -34,7 +36,7 @@ has background_perl => (
 
 has only_deps => (
 	is => 'ro',
-	isa => 'Bool',
+	isa => Bool,
 	default => 0,
 );
 
