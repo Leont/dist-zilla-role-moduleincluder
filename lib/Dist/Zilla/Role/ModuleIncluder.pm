@@ -32,7 +32,7 @@ sub _get_reqs {
 	my ($reqs, $scanner, $module, $background, $blacklist) = @_;
 	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
-	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $blacklist, $background) } keys %new_reqs;
+	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $blacklist, $background) } sort keys %new_reqs;
 	for my $req (@real_reqs) {
 		if (defined $reqs->{$module}) {
 			next if $reqs->{$module} >= $new_reqs{$req};
@@ -57,10 +57,10 @@ sub include_modules {
 	my %reqs;
 	my $scanner = Perl::PrereqScanner->new;
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
-	_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
-	my @modules = grep { !$modules{$_} } keys %modules;
-	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
-	for my $filename (keys %location_for) {
+	_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for sort keys %modules;
+	my @modules = grep { !$modules{$_} } sort keys %modules;
+	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, sort keys %reqs);
+	for my $filename (sort keys %location_for) {
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => read_file($location_for{$filename})});
 		$self->add_file($file);
 	}
