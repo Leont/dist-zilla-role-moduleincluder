@@ -93,4 +93,8 @@ Set the background perl version. If the (appropriate version of the) module was 
 
 Do not include the specified modules, only their dependencies. Note that it still includes the module if something else depends on it.
 
+=item * blacklist
+
+The name of a module to never include.  This option can be given more than once.
+
 =back
