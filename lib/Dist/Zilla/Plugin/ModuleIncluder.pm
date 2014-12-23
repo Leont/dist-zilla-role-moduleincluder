@@ -1,8 +1,8 @@
 package Dist::Zilla::Plugin::ModuleIncluder;
+
+# vim: ts=4 sts=0 sw=0 noet
 use version;
 use Moose;
-
-use version;
 use MooseX::Types::Moose qw/ArrayRef Bool/;
 use MooseX::Types::Perl 'VersionObject';
 use MooseX::Types::Stringlike 'Stringlike';

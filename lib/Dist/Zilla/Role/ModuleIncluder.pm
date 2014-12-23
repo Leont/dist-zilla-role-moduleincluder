@@ -1,5 +1,6 @@
 package Dist::Zilla::Role::ModuleIncluder;
 
+# vim: ts=4 sts=0 sw=0 noet
 use Moose::Role;
 
 use Dist::Zilla::File::InMemory 5.000;
