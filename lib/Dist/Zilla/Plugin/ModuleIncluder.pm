@@ -1,8 +1,8 @@
 package Dist::Zilla::Plugin::ModuleIncluder;
+
+# vim: ts=2 sts=2 sw=2 noet
 use version;
 use Moose;
-
-use version;
 use MooseX::Types::Perl 'VersionObject';
 
 with qw/Dist::Zilla::Role::ModuleIncluder Dist::Zilla::Role::FileGatherer/;
