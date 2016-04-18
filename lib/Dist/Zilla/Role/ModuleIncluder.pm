@@ -6,7 +6,7 @@ use Moose::Role;
 use Dist::Zilla::File::InMemory 5.000;
 use File::Slurper 'read_binary';
 use Scalar::Util qw/reftype/;
-use List::MoreUtils 'uniq';
+use List::Util 1.45 'uniq';
 use Module::CoreList;
 use Module::Metadata;
 use Perl::PrereqScanner;
