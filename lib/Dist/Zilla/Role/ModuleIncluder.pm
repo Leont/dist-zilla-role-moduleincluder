@@ -84,7 +84,7 @@ This role allows your plugin to include one or more modules into the distributio
 
 =method include_modules($modules, $background_perl, $options)
 
-Include all modules in C<@$modules>, and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, blacklist, to specify dependencies that shouldn't be included.
+Include all modules (and their dependencies) in C<@$modules>, in F<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, C<blacklist>, to specify dependencies that shouldn't be included.
 
 =cut
 
