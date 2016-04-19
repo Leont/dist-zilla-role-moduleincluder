@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+          - Add an include_dependencies option
           - Handle encodings correctly
           - Convert to File::Slurper
           - include_modules() now returns the list of file objects that were

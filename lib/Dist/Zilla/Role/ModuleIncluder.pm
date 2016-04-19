@@ -2,6 +2,7 @@ package Dist::Zilla::Role::ModuleIncluder;
 
 # vim: ts=4 sts=0 sw=0 noet
 use Moose::Role;
+use MooseX::Types::Moose qw/Bool/;
 
 use Dist::Zilla::File::InMemory 5.000;
 use File::Slurper 'read_binary';
@@ -24,14 +25,31 @@ my $version = \%Module::CoreList::version;
 
 ## no critic (Variables::ProhibitPackageVars)
 
+has include_dependencies => (
+	is => 'ro',
+	isa => Bool,
+	default => 1,
+);
+
 sub _should_skip {
 	my ($module, $version, $blacklist, $background) = @_;
 	return $blacklist->{$module} || exists $background->{$module} && ($version <= 0 || $background->{$module} >= $version);
 }
 
+{
+	# cache of Module::Metadata objects
+	my %module_files;
+	sub _find_module_by_name {
+		my $module = shift;
+		return $module_files{$module} if exists $module_files{$module};
+		$module_files{$module} = Module::Metadata->find_module_by_name($module)
+			or confess "Could not find module $module";
+	}
+}
+
 sub _get_reqs {
 	my ($self, $reqs, $scanner, $module, $background, $blacklist) = @_;
-	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
+	my $module_file = _find_module_by_name($module);
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
 	$self->log_debug([ 'found dependency of %s: %s %s', $module, $_, %new_reqs{$_} ]) foreach keys %new_reqs;
 
@@ -61,9 +79,11 @@ sub include_modules {
 	my %reqs;
 	my $scanner = Perl::PrereqScanner->new;
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
-	$self->_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
+	if ($self->include_dependencies) {
+		$self->_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
+	}
 	my @modules = grep { !$modules{$_} } keys %modules;
-	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
+	my %location_for = map { _mod_to_filename($_) => _find_module_by_name($_) } uniq(@modules, keys %reqs);
 	return map {
 		my $filename = $_;
 		$self->log_debug([ 'copying for inclusion: %s', $location_for{$filename} ]);
@@ -75,7 +95,7 @@ sub include_modules {
 
 1;
 
-#ABSTRACT: Include a module and its dependencies in inc/
+#ABSTRACT: Include modules and their dependencies in inc/
 
 __END__
 
@@ -83,9 +103,13 @@ __END__
 
 This role allows your plugin to include one or more modules into the distribution for build time purposes. The modules will not be installed.
 
+=attr include_dependencies
+
+This decides if dependencies should be included as well. This defaults to true.
+
 =method include_modules($modules, $background_perl, $options)
 
-Include all modules (and their dependencies) in C<@$modules>, in F<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, C<blacklist>, to specify dependencies that shouldn't be included.
+Include all modules (and possibly their dependencies) in C<@$modules>, in F<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, C<blacklist>, to specify dependencies that shouldn't be included.
 
 All the file objects that were added to the distribution are returned as a list.
 

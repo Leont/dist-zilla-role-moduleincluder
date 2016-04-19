@@ -74,6 +74,7 @@ In dist.ini:
  module = Bar
  background_perl = 5.008001 #default value
  only_deps = 0 #default
+ include_dependencies = 1 #default
 
 =head1 DESCRIPTION
 
