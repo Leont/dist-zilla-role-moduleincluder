@@ -5,7 +5,7 @@ use Moose::Role;
 use Dist::Zilla::File::InMemory;
 use File::Slurp::Tiny 'read_file';
 use Scalar::Util qw/reftype/;
-use List::MoreUtils 'uniq';
+use List::Util 1.45 'uniq';
 use Module::CoreList;
 use Module::Metadata;
 use Perl::PrereqScanner;
@@ -28,9 +28,20 @@ sub _should_skip {
 	return $blacklist->{$module} || exists $background->{$module} && ($version <= 0 || $background->{$module} >= $version);
 }
 
+{
+	# cache of Module::Metadata objects
+	my %module_files;
+	sub _find_module_by_name {
+		my $module = shift;
+		return $module_files{$module} if exists $module_files{$module};
+		$module_files{$module} = Module::Metadata->find_module_by_name($module)
+			or confess "Could not find module $module";
+	}
+}
+
 sub _get_reqs {
 	my ($reqs, $scanner, $module, $background, $blacklist) = @_;
-	my $module_file = Module::Metadata->find_module_by_name($module) or confess "Could not find module $module";
+	my $module_file = _find_module_by_name($module);
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
 	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $blacklist, $background) } keys %new_reqs;
 	for my $req (@real_reqs) {
@@ -59,12 +70,13 @@ sub include_modules {
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
 	_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
 	my @modules = grep { !$modules{$_} } keys %modules;
-	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
-	for my $filename (keys %location_for) {
+	my %location_for = map { _mod_to_filename($_) => _find_module_by_name($_) } uniq(@modules, keys %reqs);
+	return map {
+		my $filename = $_;
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, content => read_file($location_for{$filename})});
 		$self->add_file($file);
-	}
-	return;
+		$file;
+	} keys %location_for;
 }
 
 1;
@@ -79,7 +91,9 @@ This role allows your plugin to include one or more modules into the distributio
 
 =method include_modules($modules, $background_perl, $options)
 
-Include all modules in C<@$modules>, and their dependencies in C<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, blacklist, to specify dependencies that shouldn't be included.
+Include all modules (and their dependencies) in C<@$modules>, in F<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, C<blacklist>, to specify dependencies that shouldn't be included.
+
+All the file objects that were added to the distribution are returned as a list.
 
 =cut
 
