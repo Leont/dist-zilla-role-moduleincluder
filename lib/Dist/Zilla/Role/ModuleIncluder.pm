@@ -64,12 +64,13 @@ sub include_modules {
 	$self->_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
 	my @modules = grep { !$modules{$_} } keys %modules;
 	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
-	for my $filename (keys %location_for) {
+	return map {
+		my $filename = $_;
 		$self->log_debug([ 'copying for inclusion: %s', $location_for{$filename} ]);
 		my $file = Dist::Zilla::File::InMemory->new({name => $filename, encoded_content => read_binary($location_for{$filename})});
 		$self->add_file($file);
-	}
-	return;
+		$file;
+	} keys %location_for;
 }
 
 1;
@@ -85,6 +86,8 @@ This role allows your plugin to include one or more modules into the distributio
 =method include_modules($modules, $background_perl, $options)
 
 Include all modules (and their dependencies) in C<@$modules>, in F<inc/>, except those that are core modules as of perl version C<$background_perl> (which is expected to be a version object). C<$options> is a hash that currently has only one possible key, C<blacklist>, to specify dependencies that shouldn't be included.
+
+All the file objects that were added to the distribution are returned as a list.
 
 =cut
 

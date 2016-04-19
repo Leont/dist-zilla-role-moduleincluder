@@ -3,6 +3,8 @@ Revision history for Dist-Zilla-Role-ModuleIncluder
 {{$NEXT}}
           - Handle encodings correctly
           - Convert to File::Slurper
+          - include_modules() now returns the list of file objects that were
+          added.
 
 0.004     2013-11-12 18:01:09 Europe/Amsterdam
           Switch from File::Slurp to File::Slurp::Tiny
