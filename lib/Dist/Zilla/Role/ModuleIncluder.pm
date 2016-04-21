@@ -31,11 +31,6 @@ has include_dependencies => (
 	default => 1,
 );
 
-sub _should_skip {
-	my ($module, $version, $blacklist, $background) = @_;
-	return $blacklist->{$module} || exists $background->{$module} && ($version <= 0 || $background->{$module} >= $version);
-}
-
 {
 	# cache of Module::Metadata objects
 	my %module_files;
@@ -53,7 +48,7 @@ sub _get_reqs {
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
 	$self->log_debug([ 'found dependency of %s: %s %s', $module, $_, %new_reqs{$_} ]) foreach keys %new_reqs;
 
-	my @real_reqs = grep { !_should_skip($_, $new_reqs{$_}, $blacklist, $background) } keys %new_reqs;
+	my @real_reqs = grep { !$blacklist->{$_} && !Module::CoreList::is_core($_, $new_reqs{$_}, $background) } keys %new_reqs;
 	for my $req (@real_reqs) {
 		if (defined $reqs->{$module}) {
 			next if $reqs->{$module} >= $new_reqs{$req};
@@ -80,7 +75,7 @@ sub include_modules {
 	my $scanner = Perl::PrereqScanner->new;
 	my %blacklist = map { ( $_ => 1 ) } 'perl', @{ $options->{blacklist} || [] };
 	if ($self->include_dependencies) {
-		$self->_get_reqs(\%reqs, $scanner, $_, $version->{ _version_normalize($background) }, \%blacklist) for keys %modules;
+		$self->_get_reqs(\%reqs, $scanner, $_, _version_normalize($background), \%blacklist) for keys %modules;
 	}
 	my @modules = grep { !$modules{$_} } keys %modules;
 	my %location_for = map { _mod_to_filename($_) => _find_module_by_name($_) } uniq(@modules, keys %reqs);
