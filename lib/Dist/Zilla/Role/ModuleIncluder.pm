@@ -3,7 +3,7 @@ package Dist::Zilla::Role::ModuleIncluder;
 use Moose::Role;
 
 use Dist::Zilla::File::InMemory 5.000;
-use File::Slurp::Tiny 'read_file';
+use File::Slurper 'read_binary';
 use Scalar::Util qw/reftype/;
 use List::MoreUtils 'uniq';
 use Module::CoreList;
@@ -61,7 +61,7 @@ sub include_modules {
 	my @modules = grep { !$modules{$_} } keys %modules;
 	my %location_for = map { _mod_to_filename($_) => Module::Metadata->find_module_by_name($_) } uniq(@modules, keys %reqs);
 	for my $filename (keys %location_for) {
-		my $file = Dist::Zilla::File::InMemory->new({name => $filename, encoded_content => read_file($location_for{$filename})});
+		my $file = Dist::Zilla::File::InMemory->new({name => $filename, encoded_content => read_binary($location_for{$filename})});
 		$self->add_file($file);
 	}
 	return;
