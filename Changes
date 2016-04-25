@@ -1,6 +1,8 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+
+0.005     2016-04-25 12:14:13+01:00 Europe/London
           - Add an include_dependencies option
           - Handle encodings correctly
           - Convert to File::Slurper
