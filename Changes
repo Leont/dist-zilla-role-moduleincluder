@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+          - Fix a syntax error on perl < 5.20
 
 0.005     2016-04-25 12:14:13+01:00 Europe/London
           - Add an include_dependencies option

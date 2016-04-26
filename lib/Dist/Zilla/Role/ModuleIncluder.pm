@@ -46,7 +46,7 @@ sub _get_reqs {
 	my ($self, $reqs, $scanner, $module, $background, $blacklist) = @_;
 	my $module_file = _find_module_by_name($module);
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
-	$self->log_debug([ 'found dependency of %s: %s %s', $module, $_, %new_reqs{$_} ]) foreach keys %new_reqs;
+	$self->log_debug([ 'found dependency of %s: %s %s', $module, $_, $new_reqs{$_} ]) foreach keys %new_reqs;
 
 	my @real_reqs = grep { !$blacklist->{$_} && !Module::CoreList::is_core($_, $new_reqs{$_}, $background) } keys %new_reqs;
 	for my $req (@real_reqs) {
