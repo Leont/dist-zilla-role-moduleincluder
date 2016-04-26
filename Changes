@@ -1,6 +1,8 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+
+0.006     2016-04-27 00:59:01+02:00 Europe/Amsterdam
           - Fix a syntax error on perl < 5.20
 
 0.005     2016-04-25 12:14:13+01:00 Europe/London
