@@ -40,6 +40,23 @@ has only_deps => (
 	default => 0,
 );
 
+around dump_config => sub
+{
+	my ($orig, $self) = @_;
+	my $config = $self->$orig;
+
+	my $data = {
+		blessed($self) ne __PACKAGE__ ? ( version => __PACKAGE__->VERSION || '<self>' ) : (),
+		module => [ $self->modules ],
+		blacklist => [ $self->blacklisted_modules ],
+		background_perl => $self->background_perl->stringify,
+		only_deps => ($self->only_deps ? 1 : 0),
+	};
+	$config->{+__PACKAGE__} = $data;
+
+	return $config;
+};
+
 sub gather_files {
 	my ($self, $arg) = @_;
 	$self->include_modules({ map { ($_ => $self->only_deps ) } $self->modules }, $self->background_perl, { blacklist => [ $self->blacklisted_modules ] });

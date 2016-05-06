@@ -42,6 +42,21 @@ has include_dependencies => (
 	}
 }
 
+around dump_config => sub
+{
+	my ($orig, $self) = @_;
+	my $config = $self->$orig;
+
+	my $data = {
+		version => __PACKAGE__->VERSION || '<self>',
+		include_dependencies => ($self->include_dependencies ? 1 : 0),
+		'Module::CoreList' => Module::CoreList->VERSION,
+	};
+	$config->{+__PACKAGE__} = $data;
+
+	return $config;
+};
+
 sub _get_reqs {
 	my ($self, $reqs, $scanner, $module, $background, $blacklist) = @_;
 	my $module_file = _find_module_by_name($module);

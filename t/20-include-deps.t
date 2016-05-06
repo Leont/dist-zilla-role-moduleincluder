@@ -15,6 +15,7 @@ my $tzil = Builder->from_config(
 		add_files => {
 			path(qw(source dist.ini)) => simple_ini(
 				[ GatherDir => ],
+				[ MetaConfig => ],
 				[ ModuleIncluder => {
 						module => [ 'DateTime' ],
 						background_perl => '5.8.1',
@@ -47,6 +48,35 @@ ok( ! -e, "$_ doesn't exist in inc/")
 		my $file = "$_.pm";
 		$build_dir->child('inc', split /::|'/, $file)
 	} qw{DateTime::Locale Params::Validate strict warnings Scalar::Util};
+
+cmp_deeply(
+	$tzil->distmeta,
+	superhashof({
+		x_Dist_Zilla => superhashof({
+			plugins => supersetof(
+				{
+					class => 'Dist::Zilla::Plugin::ModuleIncluder',
+					config => {
+						'Dist::Zilla::Plugin::ModuleIncluder' => {
+							module => [ 'DateTime' ],
+							blacklist => [ ],
+							background_perl => '5.8.1',
+							only_deps => 0,
+						},
+						'Dist::Zilla::Role::ModuleIncluder' => {
+							version => Dist::Zilla::Role::ModuleIncluder->VERSION || '<self>',
+							include_dependencies => 0,
+							'Module::CoreList' => Module::CoreList->VERSION,
+						},
+					},
+					name => 'ModuleIncluder',
+					version => Dist::Zilla::Plugin::ModuleIncluder->VERSION,
+				},
+			),
+		}),
+	}),
+	'metadata is correct',
+) or diag 'got distmeta: ', explain $tzil->distmeta;
 
 diag 'saw log messages: ', explain($tzil->log_messages)
 	if not Test::Builder->new->is_passing;
