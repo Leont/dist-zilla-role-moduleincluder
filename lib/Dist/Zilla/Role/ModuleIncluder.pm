@@ -38,7 +38,7 @@ has include_dependencies => (
 		my $module = shift;
 		return $module_files{$module} if exists $module_files{$module};
 		$module_files{$module} = Module::Metadata->find_module_by_name($module)
-			or confess "Could not find module $module";
+			or confess "Can't locate $module";
 	}
 }
 
