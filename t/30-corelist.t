@@ -42,14 +42,10 @@ while (my $path = $iter->())
 	push @inc_files, $path->relative($build_dir)->stringify if -f $path;
 }
 
-TODO: {
-	local $TODO = 'Module::CoreList::is_core is busted... see perl RT#128089';
-	is(@inc_files, 0, 'requested module is in core - nothing added to inc')
-		or diag 'files added to inc: ', explain \@inc_files;
-}
+is(@inc_files, 0, 'requested module is in core - nothing added to inc')
+	or diag 'files added to inc: ', explain \@inc_files;
 
 diag 'saw log messages: ', explain($tzil->log_messages)
 	if not Test::Builder->new->is_passing;
 
 done_testing;
-

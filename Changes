@@ -2,6 +2,8 @@ Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
           - added configs to metadata under x_Dist_Zilla
+          - bump dep on Module::CoreList, to get fixed is_core() (see
+            RT#128089)
 
 0.006     2016-04-27 00:59:01+02:00 Europe/Amsterdam
           - Fix a syntax error on perl < 5.20

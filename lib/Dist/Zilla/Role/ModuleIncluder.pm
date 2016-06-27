@@ -8,7 +8,7 @@ use Dist::Zilla::File::InMemory 5.000;
 use File::Slurper 'read_binary';
 use Scalar::Util qw/reftype/;
 use List::Util 1.45 'uniq';
-use Module::CoreList;
+use Module::CoreList 5.20160520;
 use Module::Metadata;
 use Perl::PrereqScanner;
 
