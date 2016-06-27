@@ -8,6 +8,15 @@ use Test::DZil;
 use Path::Tiny;
 use Test::Fatal;
 
+use lib path('t/lib')->absolute->stringify;
+
+# The constraints of the bug we are testing (perl RT#128089) state that we
+# *must* test a module and perl version when it first entered core.  and the
+# module version requested *must* be defined, or we bypass the loop containing
+# the bug.
+
+# XSLoader was first released with perl v5.6.0, at 0.01
+
 my $tzil = Builder->from_config(
 	{ dist_root => 'does-not-exist' },
 	{
@@ -15,8 +24,8 @@ my $tzil = Builder->from_config(
 			path(qw(source dist.ini)) => simple_ini(
 				[ GatherDir => ],
 				[ ModuleIncluder => {
-						module => [ 'File::Temp' ],
-						background_perl => '5.006001',
+						module => [ 'UsesXSLoader' ],
+						background_perl => '5.006',
 					},
 				],
 			),
@@ -42,7 +51,7 @@ while (my $path = $iter->())
 	push @inc_files, $path->relative($build_dir)->stringify if -f $path;
 }
 
-is(@inc_files, 0, 'requested module is in core - nothing added to inc')
+is(@inc_files, 1, 'requested module uses deps that are in core - nothing extra added to inc')
 	or diag 'files added to inc: ', explain \@inc_files;
 
 diag 'saw log messages: ', explain($tzil->log_messages)
