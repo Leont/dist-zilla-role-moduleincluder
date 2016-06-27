@@ -63,7 +63,9 @@ sub _get_reqs {
 	my %new_reqs = %{ $scanner->scan_file($module_file)->as_string_hash };
 	$self->log_debug([ 'found dependency of %s: %s %s', $module, $_, $new_reqs{$_} ]) foreach keys %new_reqs;
 
-	my @real_reqs = grep { !$blacklist->{$_} && !Module::CoreList::is_core($_, $new_reqs{$_}, $background) } keys %new_reqs;
+	my @real_reqs = grep {
+		!$blacklist->{$_} && !Module::CoreList::is_core($_, $new_reqs{$_} ? $new_reqs{$_} : undef, $background)
+	} keys %new_reqs;
 	for my $req (@real_reqs) {
 		if (defined $reqs->{$module}) {
 			next if $reqs->{$module} >= $new_reqs{$req};
