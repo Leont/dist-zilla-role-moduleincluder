@@ -5,7 +5,7 @@ use warnings;
 use Test::More 0.88;
 use if $ENV{AUTHOR_TESTING}, 'Test::Warnings';
 use Test::DZil;
-use Path::Tiny;
+use Path::Tiny 0.062;
 use Test::Fatal;
 
 use lib path('t/lib')->absolute->stringify;
@@ -45,11 +45,10 @@ my $build_dir = path($tzil->tempdir)->child('build');
 
 my $inc_dir = $build_dir->child('inc');
 my @inc_files;
-my $iter = $inc_dir->iterator({ recurse => 1 });
-while (my $path = $iter->())
-{
-	push @inc_files, $path->relative($build_dir)->stringify if -f $path;
-}
+$inc_dir->visit(
+	sub { push @inc_files, $_->relative($build_dir)->stringify if -f },
+	{ recurse => 1 },
+);
 
 is(@inc_files, 1, 'requested module uses deps that are in core - nothing extra added to inc')
 	or diag 'files added to inc: ', explain \@inc_files;
