@@ -1,6 +1,8 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+
+0.007     2016-06-28 00:12:34+02:00 Europe/Amsterdam
           - added configs to metadata under x_Dist_Zilla
           - bump dep on Module::CoreList, to get fixed is_core() (see
             RT#128089)
