@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Role-ModuleIncluder
 
 {{$NEXT}}
+          - fix test that broke with newer DateTime
 
 0.007     2016-06-28 00:12:34+02:00 Europe/Amsterdam
           - added configs to metadata under x_Dist_Zilla

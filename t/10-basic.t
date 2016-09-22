@@ -40,7 +40,7 @@ ok(-e, "$_ exists in inc/")
 	for map {
 		my $file = "$_.pm";
 		$build_dir->child('inc', split /::|'/, $file)
-	} qw{DateTime DateTime::Locale Params::Validate};
+	} qw{DateTime DateTime::Locale};
 
 ok( ! -e, "$_ doesn't exist in inc/")
 	for map {
